@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+            xmlns:fx="http://javafx.com/fxml" fx:controller="Fx.ProjectController">
+    <MenuBar layoutY="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <Menu mnemonicParsing="false" text="File">
+            <Menu mnemonicParsing="false" text="Open">
+                <MenuItem mnemonicParsing="false" onAction="#dummy" text="Open Text File"/>
+                <MenuItem mnemonicParsing="false" onAction="#dummy" text="Open Bin File"/>
+            </Menu>
+            <Menu mnemonicParsing="false" text="Save">
+                <MenuItem mnemonicParsing="false" onAction="#dummy" text="Save Bin File"/>
+                <MenuItem mnemonicParsing="false" onAction="#dummy" text="Save Text File"/>
+            </Menu>
+            <MenuItem mnemonicParsing="false" onAction="#dummy" text="Exit"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Lists">
+            <MenuItem mnemonicParsing="false" onAction="#showUsers" text="Users"/>
+            <MenuItem mnemonicParsing="false" onAction="#dummy" text="Nodes"/>
+            <MenuItem mnemonicParsing="false" onAction="#dummy" text="Exit"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+            <MenuItem mnemonicParsing="false" onAction="#dummy" text="About"/>
+        </Menu>
+    </MenuBar>
+    <Pane layoutY="30.0" fx:id="MainContent"/>
+</AnchorPane>
