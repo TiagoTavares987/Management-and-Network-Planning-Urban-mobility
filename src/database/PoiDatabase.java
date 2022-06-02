@@ -4,12 +4,14 @@ import core.baseEntities.Const;
 import core.entities.Poi;
 import core.entities.UserPoi;
 import core.interfaces.DatabaseI;
+import core.utils.Test;
 import edu.princeton.cs.algs4.ST;
 import java.io.*;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-public class PoiDatabase implements DatabaseI<Poi> {
+public class PoiDatabase extends Database implements DatabaseI<Poi> {
 
     private final ST<Integer, Poi> poiDatabaseST = new ST<>();
 
@@ -107,9 +109,12 @@ public class PoiDatabase implements DatabaseI<Poi> {
     }
 
     @Override
-    public void ReadFromFile() throws IOException {
+    public void ReadFromFile(String path) throws IOException, ParseException {
 
-        FileReader fr = new FileReader(new File(Const.inputPath, Const.poisFile));
+        if(Test.isNullOrEmpty(path))
+            path = Const.inputPath;
+
+        FileReader fr = new FileReader(new File(path, Const.poisFile));
         BufferedReader br = new BufferedReader(fr);
 
         String line;
@@ -166,9 +171,12 @@ public class PoiDatabase implements DatabaseI<Poi> {
     }
 
     @Override
-    public void ReadFromBinFile() throws IOException {
+    public void ReadFromBinFile(String path) throws IOException {
 
-        FileInputStream file = new FileInputStream(Const.poisBinInputFile);
+        if(Test.isNullOrEmpty(path))
+            path = Const.poisBinInputFile;
+
+        FileInputStream file = new FileInputStream(path);
         DataInputStream dos = new DataInputStream(new BufferedInputStream(file));
 
         int n = dos.readInt();

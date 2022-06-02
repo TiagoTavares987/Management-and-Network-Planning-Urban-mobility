@@ -1,90 +1,119 @@
 package Fx;
 
+import core.baseEntities.Const;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
+import javafx.stage.DirectoryChooser;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 
 public class ProjectController {
 
     public Pane MainContent;
-    public AnchorPane Menu;
+    public MenuItem Login;
+    public MenuItem Logout;
+    public Label CurrentUser;
 
     @FXML
     protected void dummy(){
-        //box.getChildren().addAll(new Label("zesxrdctfvygb"));
-        ProjectApp.Show(ProjectApp.users);
-
-        //Pane asd = new Pane();
-        //asd.getChildren().add();
+        //ProjectApp.Show(ProjectApp.users);
+        //ProjectApp.Show(ProjectApp.pois);
+        //ProjectApp.Show(ProjectApp.tags);
+        //ProjectApp.Show(ProjectApp.nodes);
+        //ProjectApp.Show(ProjectApp.ways);
     }
 
     @FXML
-    protected void startClick() throws IOException {
-        //ProjectApp.Show(ProjectApp.start);
-        ProjectApp.Show(ProjectApp.users);
-    }
-    @FXML
-    protected void abcClick() throws IOException {
-        //ProjectApp.Show(ProjectApp.abc);
-        ProjectApp.Show(ProjectApp.users);
-    }
-
-    public void showUsers(ActionEvent actionEvent) {
-        ProjectApp.Show(ProjectApp.users);
-    }
-
-    /*void onOpenText(ActionEvent event) {
-
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open Text File");
-        File selectedFile = fileChooser.showOpenDialog(null);
-        if(selectedFile != null) {
-            PolicyUtils.IO.(selectedFile.getAbsolutePath());
-        }
-        updateGraphGroup();
-        updateCachesTable();
-        updateUsersTable();
+    public void login(ActionEvent actionEvent) {
+        ProjectApp.Show(ProjectApp.login);
     }
 
     @FXML
-    void onOpenBin(ActionEvent event) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open Binary File");
-        File selectedFile = fileChooser.showOpenDialog(null);
-        if(selectedFile != null) {
-            PolicyUtils.IO.readBinFile(selectedFile.getAbsolutePath());
-        }
-        updateGraphGroup();
-        updateCachesTable();
-        updateUsersTable();
+    public void logout(ActionEvent actionEvent) {
     }
 
     @FXML
-    void onSaveText(ActionEvent event) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Text File");
-        File selectedFile = fileChooser.showSaveDialog(null);
-        if(selectedFile != null) {
-            (selectedFile.getAbsolutePath());
-        }
+    public void loadText(ActionEvent actionEvent) throws IOException, ParseException {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Select folder");
+        directoryChooser.setInitialDirectory(new File(Const.inputPath)); // abrir no diretorio input
+        File dir = directoryChooser.showDialog(null);
+
+        Login.setDisable(false);
+        Main.loadText(dir.getPath()); // le o ficheiro de texto caminho onde esta a pasta
+        ProjectApp.Update();
     }
 
     @FXML
-    void onSaveBin(ActionEvent event) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Binary File");
-        File selectedFile = fileChooser.showSaveDialog(null);
-        if(selectedFile != null) {
-           PolicyUtils.IO.writeBinFile(selectedFile.getAbsolutePath());
-        }
+    public void loadBin(ActionEvent actionEvent) throws IOException {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Select folder");
+        directoryChooser.setInitialDirectory(new File(Const.inputPath));
+        File dir = directoryChooser.showDialog(null);
+
+        Login.setDisable(false);
+        Main.loadBin(dir.getPath());
+        ProjectApp.Update();
+    }
+
+    @FXML
+    public void saveText(ActionEvent actionEvent) throws IOException {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Save folder");
+        directoryChooser.setInitialDirectory(new File(Const.outputPath));
+
+        Login.setDisable(true);
+        Main.now();
+        ProjectApp.Update();
+    }
+
+    @FXML
+    public void saveBin(ActionEvent actionEvent) throws IOException {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Save folder");
+        directoryChooser.setInitialDirectory(new File(Const.outputPath));
+
+        Login.setDisable(true);
+        Main.binNow();
+        ProjectApp.Update();
+    }
+
+    @FXML
+    void onAboutMenu(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Feito por Diana Marques e Tiago Tavares", ButtonType.OK);
+        alert.setHeaderText("About");
+        alert.setTitle("About");
+        alert.showAndWait();
     }
 
     @FXML
     void onExitMenu(ActionEvent event) {
         Platform.exit();
         System.exit(0);
-    }*/
+    }
+
+    // mostra o conteudo do user (tabela)
+    public void showUsers(ActionEvent actionEvent) {
+        ProjectApp.Show(ProjectApp.users);
+    }
+    public void showPois(ActionEvent actionEvent) {
+        ProjectApp.Show(ProjectApp.pois);
+    }
+    public void showTags(ActionEvent actionEvent) {
+        ProjectApp.Show(ProjectApp.tags);
+    }
+    public void showNodes(ActionEvent actionEvent) {
+        ProjectApp.Show(ProjectApp.nodes);
+    }
+    public void showWays(ActionEvent actionEvent) {
+        ProjectApp.Show(ProjectApp.ways);
+    }
+    public void showGraph(ActionEvent actionEvent)  {
+        ProjectApp.Show(ProjectApp.graph);
+    }
 }

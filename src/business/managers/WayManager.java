@@ -1,9 +1,6 @@
 package business.managers;
 
-import core.entities.Localization;
-import core.entities.Poi;
-import core.entities.Tag;
-import core.entities.Way;
+import core.entities.*;
 import core.interfaces.DatabaseI;
 import core.utils.Test;
 import database.WayDatabase;
@@ -11,6 +8,7 @@ import edu.princeton.cs.algs4.BST;
 import edu.princeton.cs.algs4.ST;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 public class WayManager {
@@ -101,6 +99,9 @@ public class WayManager {
                 throw new Exception("Node nao apagado");
         }
 
+        listById.delete(way_id);
+        listByName.delete(way.Name);
+
         //apagar todos os objectos contidos neste
 
         ST<Integer, Tag> wayTags = way.getTags();
@@ -137,6 +138,7 @@ public class WayManager {
                     listById.put(newWay.getId(), newWay);
                     listByName.delete(oldWayname);
                     listByName.put(newWay.Name, newWay);
+                    return newWay;
                 }
             }
         }
@@ -159,13 +161,23 @@ public class WayManager {
         if (way == null)
             throw new Exception("Id do way invalido");
 
-        way = new Way();
-        way.setId(way_id);
-        way.Name = name;
-        way.Start = start;
-        way.End = end;
+        Way newWay = new Way();
+        newWay.setId(way_id);
+        newWay.Name = name;
+        newWay.Start = start;
+        newWay.End = end;
 
-        SaveWay(way);
+        ST<Integer, Poi> oldPois = way.getPois();
+        ST<Integer, Poi> newPois = newWay.getPois();
+        for(Integer id : oldPois)
+            newPois.put(oldPois.get(id).getId(), oldPois.get(id));
+
+        ST<Integer, Tag> oldTags = way.getTags();
+        ST<Integer, Tag> newTags = newWay.getTags();
+        for(Integer id : oldTags)
+            newTags.put(oldTags.get(id).getId(), oldTags.get(id));
+
+        SaveWay(newWay);
     }
     /**
      *
@@ -187,21 +199,27 @@ public class WayManager {
     /**
      *
      * @param way_id Integer recebe o id do way
-     * @param descricao String recebe a descricao
+     * @param tag_id Integer recebe o id da tag
      * @throws Exception
      */
-    public void addTag(Integer way_id, String descricao) throws Exception {
+    public void addTag(Integer way_id, Integer tag_id) throws Exception {
 
         Way way = database.GetEntity(way_id);
         if (way == null)
             throw new Exception("Way invalido");
 
-        int tag = tagManager.newTag(descricao);
-        way.getTags().put(tag, tagManager.GetTag(tag));
+        Tag tag = tagManager.GetTag(tag_id);
+        if (tag == null)
+            throw new Exception("Tag invalida");
+
+        way.getTags().put(tag_id, tag);
 
         Way updatedWay = database.Update(way);
         if (updatedWay == null)
             throw new Exception("Tag nao associado ao way");
+
+        listById.put(updatedWay.getId(), updatedWay);
+        listByName.put(updatedWay.Name, updatedWay);
     }
 
     //deleteTag
@@ -224,28 +242,31 @@ public class WayManager {
 
     }
 
-    // addPoi
-
     /**
      *
      * @param way_id Integer recebe o id do way
-     * @param Name String recebe o nome
-     * @param descricao String recebe a descricao
-     * @param localization Localization recebe a log e lan
+     * @param poi_id id do poi
      * @throws Exception
      */
-    public void addPoi(Integer way_id, String Name, String descricao, Localization localization) throws Exception {
+    public void addPoi(Integer way_id, Integer poi_id) throws Exception {
 
         Way way = database.GetEntity(way_id);
         if (way == null)
             throw new Exception("Way invalido");
 
-        int poi = poiManager.newPoi(Name, descricao, localization);
-        way.getPois().put(poi, poiManager.GetPoi(poi));
+        Poi poi = poiManager.GetPoi(poi_id);
+        if (poi == null)
+            throw new Exception("Poi invalido");
 
-        Way updatedNode = database.Update(way);
-        if (updatedNode == null)
+
+        way.getPois().put(poi_id, poi);
+
+        Way updatedWay = database.Update(way);
+        if (updatedWay == null)
             throw new Exception("Poi nao associado ao way");
+
+        listById.put(updatedWay.getId(), updatedWay);
+        listByName.put(updatedWay.Name, updatedWay);
     }
 
     //deletePoi
@@ -273,6 +294,42 @@ public class WayManager {
      */
     public void snapShot() throws IOException {
         database.SaveToFile();
+    }
+
+    public void binSnapShot() throws IOException {
+        database.SaveToBinFile();
+    }
+
+    public void loadTextFile(String path) throws IOException, ParseException {
+        database.ReadFromFile(path);
+
+        for(int wayId : listById.keys()){
+            listById.delete(wayId);
+        }
+        for(String name : listByName.keys()){
+            listByName.delete(name);
+        }
+
+        for(Way way : database.GetTable()) {
+            listById.put(way.getId(), way);
+            listByName.put(way.Name, way);
+        }
+    }
+
+    public void loadBinFile(String path) throws IOException {
+        database.ReadFromBinFile(path);
+
+        for(int wayId : listById.keys()){
+            listById.delete(wayId);
+        }
+        for(String name : listByName.keys()){
+            listByName.delete(name);
+        }
+
+        for(Way way : database.GetTable()) {
+            listById.put(way.getId(), way);
+            listByName.put(way.Name, way);
+        }
     }
 
 }

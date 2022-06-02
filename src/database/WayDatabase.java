@@ -6,13 +6,15 @@ import core.entities.Poi;
 import core.entities.Tag;
 import core.entities.Way;
 import core.interfaces.DatabaseI;
+import core.utils.Test;
 import edu.princeton.cs.algs4.ST;
 
 import java.io.*;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-public class WayDatabase implements DatabaseI<Way> {
+public class WayDatabase extends Database implements DatabaseI<Way> {
 
     private final ST<Integer, Way> wayDatabaseST = new ST<>();
     private final TagDatabase tagDatabase = new TagDatabase();
@@ -100,13 +102,20 @@ public class WayDatabase implements DatabaseI<Way> {
             FileWriter tfw = new FileWriter(new File(Const.outputPath, Const.waysTagsFile)); // wrapp do file
             PrintWriter tpw = new PrintWriter(tfw);
             FileWriter pfw = new FileWriter(new File(Const.outputPath, Const.waysPoisFile)); // wrapp do file
-            PrintWriter ppw = new PrintWriter(tfw);
+            PrintWriter ppw = new PrintWriter(pfw);
 
+            String line;
             for(Integer wayId : wayDatabaseST.keys()){
                 Way way = wayDatabaseST.get(wayId);
-                npw.println(way.toString());
-                tpw.println(way.tagsToString());
-                ppw.println(way.poisToString());
+                line = way.toString();
+                if (!Test.isNullOrEmpty(line))
+                    npw.println(line);
+                line = way.tagsToString();
+                if (!Test.isNullOrEmpty(line))
+                    tpw.println(line);
+                line = way.poisToString();
+                if (!Test.isNullOrEmpty(line))
+                    ppw.println(line);
             }
 
             npw.flush();
@@ -128,9 +137,12 @@ public class WayDatabase implements DatabaseI<Way> {
     }
 
     @Override
-    public void ReadFromFile() throws IOException {
+    public void ReadFromFile(String path) throws IOException, ParseException {
 
-        FileReader fr = new FileReader(new File(Const.inputPath, Const.waysFile));
+        if(Test.isNullOrEmpty(path))
+            path = Const.inputPath;
+
+        FileReader fr = new FileReader(new File(path, Const.waysFile));
         BufferedReader br = new BufferedReader(fr);
 
         String line;
@@ -273,9 +285,12 @@ public class WayDatabase implements DatabaseI<Way> {
     }
 
     @Override
-    public void ReadFromBinFile() throws IOException {
+    public void ReadFromBinFile(String path) throws IOException {
 
-        FileInputStream file = new FileInputStream(Const.waysBinInputFile);
+        if(Test.isNullOrEmpty(path))
+            path = Const.waysBinInputFile;
+
+        FileInputStream file = new FileInputStream(path);
         DataInputStream dos = new DataInputStream(new BufferedInputStream(file));
 
         Way way = new Way();

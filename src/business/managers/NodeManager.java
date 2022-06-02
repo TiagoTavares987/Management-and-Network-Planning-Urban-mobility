@@ -1,13 +1,16 @@
 package business.managers;
 
+import business.utils.Utils;
 import core.entities.*;
 import core.interfaces.DatabaseI;
 import core.utils.Test;
 import database.NodeDatabase;
 import edu.princeton.cs.algs4.BST;
+import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.ST;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 public class NodeManager {
@@ -63,8 +66,6 @@ public class NodeManager {
         return listById.get(id);
     }
 
-    // ver isto
-
     /**
      *
      * @param name String recebe o nome do node
@@ -79,9 +80,9 @@ public class NodeManager {
         node.getLocalization().Latitude = localization.Latitude;
         node.getLocalization().Longitude = localization.Longitude;
 
-        Node newNode= SaveNode(node);
+        Node newNode= SaveNode(node); // guardar o node
 
-        return newNode.getId();
+        return newNode.getId(); // retorna o id do novo node
     }
 
     /**
@@ -91,9 +92,9 @@ public class NodeManager {
      * @throws Exception
      */
     public void deleteNode(Integer node_id, boolean silent) throws Exception {
-        //verificar se algum objecto depende deste
+        //verificar se algum objeto depende deste
 
-        ArrayList<Way> ways = wayManager.GetAll();
+        ArrayList<Way> ways = wayManager.GetAll(); // recebe para o array todas as ways
         for(Way way : ways){
             if(way.Start == node_id || way.End == node_id){
                 if(silent)
@@ -104,7 +105,6 @@ public class NodeManager {
         }
 
         //apagar este object
-
         Node node = GetNode(node_id);
 
         if (!database.Delete(node_id)){
@@ -114,8 +114,11 @@ public class NodeManager {
                 throw new Exception("Node nao apagado");
         }
 
+        listById.delete(node_id);
+        listByName.delete(node.Name);
+
         //apagar todos os objectos contidos neste
-        ST<Integer, Tag> nodeTags = node.getTags();
+        ST<Integer, Tag> nodeTags = node.getTags(); // buscar todas as tags daquele node
         for(Integer tagId : nodeTags.keys())
             tagManager.deleteTag(nodeTags.get(tagId).getId(), true);
 
@@ -144,10 +147,11 @@ public class NodeManager {
             if (listById.contains(node.getId())) {
                 Node newNode = database.Update(node);
                 if (newNode != null) {
-                    String oldNodename = listById.get(node.getId()).Name;
+                    String oldNodename = listById.get(node.getId()).Name; // buscar o nome do node com aquele id
                     listById.put(newNode.getId(), newNode);
                     listByName.delete(oldNodename);
                     listByName.put(newNode.Name, newNode);
+                    return newNode;
                 }
             }
         }
@@ -169,13 +173,25 @@ public class NodeManager {
         if(node == null)
             throw new Exception("Id do Node invalido");
 
-        node = new Node();
-        node.setId(node_id);
-        node.Name = Name;
-        node.getLocalization().Longitude = localization.Longitude;
-        node.getLocalization().Latitude = localization.Latitude;
+        Node newNode = new Node();
+        newNode.setId(node_id);
+        newNode.Name = Name;
+        newNode.getLocalization().Longitude = localization.Longitude;
+        newNode.getLocalization().Latitude = localization.Latitude;
 
-        SaveNode(node);
+
+        // temos que guardar os pois e tags do node pois ao editarmos sem isto perdiamos a referencia a eles
+        ST<Integer, Poi> oldPois = node.getPois();
+        ST<Integer, Poi> newPois = newNode.getPois();
+        for(Integer id : oldPois)
+            newPois.put(oldPois.get(id).getId(), oldPois.get(id));
+
+        ST<Integer, Tag> oldTags = node.getTags();
+        ST<Integer, Tag> newTags = newNode.getTags();
+        for(Integer id : oldTags)
+            newTags.put(oldTags.get(id).getId(), oldTags.get(id));
+
+        SaveNode(newNode);
     }
 
     /**
@@ -196,21 +212,27 @@ public class NodeManager {
     /**
      *
      * @param node_id Integer que recebe o id do node
-     * @param descricao String que recebe o id da tag
+     * @param tag_id Integer que recebe o id da tag
      * @throws Exception
      */
-    public void addTag(Integer node_id, String descricao) throws Exception {
+    public void addTag(Integer node_id, Integer tag_id) throws Exception {
 
         Node node = database.GetEntity(node_id);
         if (node == null)
             throw new Exception("Node invalido");
 
-        int tag = tagManager.newTag(descricao);
-        node.getTags().put(tag, tagManager.GetTag(tag));
+        Tag tag = tagManager.GetTag(tag_id);
+        if (tag == null)
+            throw new Exception("Tag invalida");
+
+        node.getTags().put(tag_id, tag);
 
         Node updatedNode = database.Update(node);
         if (updatedNode == null)
             throw new Exception("Tag nao associado ao node");
+
+        listById.put(updatedNode.getId(), updatedNode);
+        listByName.put(updatedNode.Name, updatedNode);
     }
 
     /**
@@ -220,39 +242,50 @@ public class NodeManager {
      * @throws Exception
      */
     //deleteTag
-    public void deleteTag(Integer tag_id, Integer node_id) throws Exception {
-
-        Node node = GetNode(node_id);
-        ST<Integer, Tag> nodeTags = node.getTags();
-
-        if(nodeTags.contains(tag_id)){
-            nodeTags.remove(tag_id);
-            SaveNode(node);
-        }
-    }
-
-    // addPoi
-
-    /**
-     *
-     * @param node_id Integer que receberá o id do node
-     * @param Name String que recebe o nome do poi
-     * @param descricao String que recebe a descricao do poi
-     * @param localization Localizaçao do poi
-     * @throws Exception
-     */
-    public void addPoi(Integer node_id, String Name, String descricao, Localization localization) throws Exception {
+    public void deleteTag(Integer node_id, Integer tag_id) throws Exception {
 
         Node node = database.GetEntity(node_id);
         if (node == null)
             throw new Exception("Node invalido");
 
-        int poi = poiManager.newPoi(Name, descricao, localization);
-        node.getPois().put(poi, poiManager.GetPoi(poi));
+        Tag tag = tagManager.GetTag(tag_id);
+        if (tag == null)
+            throw new Exception("Tag invalida");
+
+        node.getTags().remove(tag_id);
+
+        Node updatedNode = database.Update(node);
+        if (updatedNode == null)
+            throw new Exception("Tag nao associado ao node");
+
+        listById.put(updatedNode.getId(), updatedNode);
+        listByName.put(updatedNode.Name, updatedNode);
+    }
+
+    /**
+     *
+     * @param node_id Integer que receberá o id do node
+     * @param poi_id id do poi
+     * @throws Exception
+     */
+    public void addPoi(Integer node_id, Integer poi_id) throws Exception {
+
+        Node node = database.GetEntity(node_id);
+        if (node == null)
+            throw new Exception("Node invalido");
+
+        Poi poi = poiManager.GetPoi(poi_id);
+        if (poi == null)
+            throw new Exception("Poi invalido");
+
+        node.getPois().put(poi_id, poi);
 
         Node updatedNode = database.Update(node);
         if (updatedNode == null)
             throw new Exception("Poi nao associado ao node");
+
+        listById.put(updatedNode.getId(), updatedNode);
+        listByName.put(updatedNode.Name, updatedNode);
     }
 
     //deletePoi
@@ -263,16 +296,24 @@ public class NodeManager {
      * @param node_id Integer que receberá o id do node
      * @throws Exception
      */
-    public void deletePoi(Integer poi_id, Integer node_id) throws Exception {
+    public void deletePoi(Integer node_id, Integer poi_id) throws Exception {
 
-        Node node = GetNode(node_id);
-        ST<Integer, Poi> nodePois = node.getPois();
+        Node node = database.GetEntity(node_id);
+        if (node == null)
+            throw new Exception("Node invalido");
 
-        if(nodePois.contains(poi_id)){
-            nodePois.remove(poi_id);
-            SaveNode(node);
-        }
+        Poi poi = poiManager.GetPoi(poi_id);
+        if (poi == null)
+            throw new Exception("Poi invalido");
 
+        node.getPois().remove(poi_id);
+
+        Node updatedNode = database.Update(node);
+        if (updatedNode == null)
+            throw new Exception("Poi nao associado ao node");
+
+        listById.put(updatedNode.getId(), updatedNode);
+        listByName.put(updatedNode.Name, updatedNode);
     }
 
     /**
@@ -283,11 +324,45 @@ public class NodeManager {
         database.SaveToFile();
     }
 
+    public void binSnapShot() throws IOException {
+        database.SaveToBinFile();
+    }
+
     /**
      *
      * @throws IOException
      */
-    public void loadFromFile() throws IOException {
-        database.ReadFromFile();
+    public void loadTextFile(String path) throws IOException, ParseException {
+
+        database.ReadFromFile(path);
+
+        for(int nodeId : listById.keys()){
+            listById.delete(nodeId);
+        }
+        for(String nodeName : listByName.keys()){
+            listByName.delete(nodeName);
+        }
+
+        for(Node node : database.GetTable()) {
+            listById.put(node.getId(), node);
+            listByName.put(node.Name, node);
+        }
+    }
+
+    public void loadBinFile(String path) throws IOException {
+
+        database.ReadFromBinFile(path);
+
+        for(int nodeId : listById.keys()){
+            listById.delete(nodeId);
+        }
+        for(String nodeName : listByName.keys()){
+            listByName.delete(nodeName);
+        }
+
+        for(Node node : database.GetTable()) {
+            listById.put(node.getId(), node);
+            listByName.put(node.Name, node);
+        }
     }
 }

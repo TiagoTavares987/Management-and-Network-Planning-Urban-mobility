@@ -7,10 +7,11 @@ import core.enums.UserType;
 import core.utils.Test;
 import database.UserDatabase;
 import edu.princeton.cs.algs4.BST;
+import edu.princeton.cs.algs4.ST;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
-
 
 public class UserManager {
 
@@ -22,10 +23,11 @@ public class UserManager {
     /**
      * Construtor da class UserManager
      */
-    public UserManager() {
+    public UserManager(PoiManager poi_Manager) {
 
         if (database == null) {
             database = new UserDatabase();
+
             listById = new BST<>();
             listByUsername = new BST<>();
 
@@ -61,10 +63,11 @@ public class UserManager {
         return listById.get(id);
     }
 
-    public int newUser(String Name, UserType userType) {
+    public int newUser(String Name, String password, UserType userType) {
 
         User user = new User();
         user.Username = Name;
+        user.Password = password;
         user.UserType = userType;
 
         User newUser = SaveUser(user);
@@ -93,6 +96,7 @@ public class UserManager {
                         listById.put(newUser.getId(), newUser);
                         listByUsername.delete(oldUsername);
                         listByUsername.put(newUser.Username, newUser);
+                        return newUser;
                     }
                 }
             }
@@ -110,7 +114,6 @@ public class UserManager {
             listByUsername.delete(listById.get(id).Username);
             listById.delete(id);
         }
-
         return false;
     }
 
@@ -170,7 +173,13 @@ public class UserManager {
      * @return
      */
     public boolean addPoi(Integer user_id, Integer poi_id) {
-        return database.addPoi(user_id, poi_id);
+        if(database.addPoi(user_id, poi_id)) {
+            User user = database.GetEntity(user_id);
+            listById.put(user.getId(), user);
+            listByUsername.put(user.Username, user);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -180,7 +189,13 @@ public class UserManager {
      * @return
      */
     public boolean deletePoi(Integer user_id, Integer poi_id) {
-        return database.deletePoi(user_id, poi_id);
+        if(database.deletePoi(user_id, poi_id)){
+            User user = database.GetEntity(user_id);
+            listById.put(user.getId(), user);
+            listByUsername.put(user.Username, user);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -189,5 +204,41 @@ public class UserManager {
      */
     public void snapShot() throws IOException {
         database.SaveToFile();
+    }
+
+    public void binSnapShot() throws IOException {
+        database.SaveToBinFile();
+    }
+
+    public void loadTextFile(String path) throws IOException, ParseException {
+        database.ReadFromFile(path);
+
+        for(int userId : listById.keys()){
+            listById.delete(userId);
+        }
+        for(String userName : listByUsername.keys()){
+            listByUsername.delete(userName);
+        }
+
+        for(User user : database.GetTable()) {
+            listById.put(user.getId(), user);
+            listByUsername.put(user.Username, user);
+        }
+    }
+
+    public void loadBinFile(String path) throws IOException {
+        database.ReadFromBinFile(path);
+
+        for(int userId : listById.keys()){
+            listById.delete(userId);
+        }
+        for(String userName : listByUsername.keys()){
+            listByUsername.delete(userName);
+        }
+
+        for(User user : database.GetTable()) {
+            listById.put(user.getId(), user);
+            listByUsername.put(user.Username, user);
+        }
     }
 }

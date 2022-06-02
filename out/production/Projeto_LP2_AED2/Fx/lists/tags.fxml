@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" spacing="20.0"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="Fx.lists.TagsController">
+    <TableView fx:id="tagsTable">
+        <columns>
+            <TableColumn fx:id="tagIdCol" prefWidth="75.0" text="Id"/>
+            <TableColumn fx:id="tagDescriptionCol" prefWidth="75.0" text="Name"/>
+            <TableColumn fx:id="tagExtraInfoCol" prefWidth="75.0" text="Start"/>
+        </columns>
+    </TableView>
+    <HBox prefHeight="0.0" spacing="8.0">
+        <TextField fx:id="tagDescriptionField" promptText="Description"/>
+        <TextField fx:id="tagExtraInfoField" promptText="Extra Info"/>
+        <Button mnemonicParsing="false" onAction="#onTagAdd" text="Add"/>
+        <Button mnemonicParsing="false" onAction="#onTagRemove" text="Remove"/>
+        <Button mnemonicParsing="false" onAction="#onTagEdit" text="Edit"/>
+    </HBox>
+</VBox>

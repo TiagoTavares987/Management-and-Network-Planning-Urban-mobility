@@ -8,24 +8,36 @@
             xmlns:fx="http://javafx.com/fxml" fx:controller="Fx.ProjectController">
     <MenuBar layoutY="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
         <Menu mnemonicParsing="false" text="File">
-            <Menu mnemonicParsing="false" text="Open">
-                <MenuItem mnemonicParsing="false" onAction="#dummy" text="Open Text File"/>
-                <MenuItem mnemonicParsing="false" onAction="#dummy" text="Open Bin File"/>
+            <Menu mnemonicParsing="false" text="Load">
+                <MenuItem mnemonicParsing="false" onAction="#loadText" text="Text"/>
+                <MenuItem mnemonicParsing="false" onAction="#loadBin" text="Bin"/>
             </Menu>
             <Menu mnemonicParsing="false" text="Save">
-                <MenuItem mnemonicParsing="false" onAction="#dummy" text="Save Bin File"/>
-                <MenuItem mnemonicParsing="false" onAction="#dummy" text="Save Text File"/>
+                <MenuItem mnemonicParsing="false" onAction="#saveText" text="Text"/>
+                <MenuItem mnemonicParsing="false" onAction="#saveBin" text="Bin"/>
             </Menu>
-            <MenuItem mnemonicParsing="false" onAction="#dummy" text="Exit"/>
+            <MenuItem fx:id="Login" mnemonicParsing="false" onAction="#login" text="Login" disable="true"/>
+            <MenuItem fx:id="Logout" mnemonicParsing="false" onAction="#logout" text="Logout" visible="false"/>
+            <MenuItem mnemonicParsing="false" onAction="#onExitMenu" text="Exit"/>
         </Menu>
         <Menu mnemonicParsing="false" text="Lists">
             <MenuItem mnemonicParsing="false" onAction="#showUsers" text="Users"/>
-            <MenuItem mnemonicParsing="false" onAction="#dummy" text="Nodes"/>
-            <MenuItem mnemonicParsing="false" onAction="#dummy" text="Exit"/>
+            <MenuItem mnemonicParsing="false" onAction="#showPois" text="Pois"/>
+            <MenuItem mnemonicParsing="false" onAction="#showTags" text="Tags"/>
+            <MenuItem mnemonicParsing="false" onAction="#showNodes" text="Nodes"/>
+            <MenuItem mnemonicParsing="false" onAction="#showWays" text="Ways"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Caixeiro Viajante">
+            <MenuItem mnemonicParsing="false" onAction="#showGraph" text="Graph"/>
+            <Menu mnemonicParsing="false" text="Algoritmos">
+                <MenuItem mnemonicParsing="false" onAction="#dummy" text="Vizinho mais próximo"/>
+                <MenuItem mnemonicParsing="false" onAction="#dummy" text="Inserção mais próxima"/>
+            </Menu>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
-            <MenuItem mnemonicParsing="false" onAction="#dummy" text="About"/>
+            <MenuItem mnemonicParsing="false" onAction="#onAboutMenu" text="About"/>
         </Menu>
     </MenuBar>
-    <Pane layoutY="30.0" fx:id="MainContent"/>
+    <Label fx:id="CurrentUser" layoutY="5.0" AnchorPane.rightAnchor="5.0" text="Guest"/>
+    <Pane fx:id="MainContent" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0"/>
 </AnchorPane>

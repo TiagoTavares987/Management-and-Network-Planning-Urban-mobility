@@ -1,10 +1,7 @@
 package business.managers;
 
 import core.baseEntities.Entity;
-import core.entities.Node;
-import core.entities.Poi;
-import core.entities.Tag;
-import core.entities.Way;
+import core.entities.*;
 import core.interfaces.DatabaseI;
 import core.utils.Test;
 import database.TagDatabase;
@@ -12,6 +9,7 @@ import edu.princeton.cs.algs4.BST;
 import edu.princeton.cs.algs4.ST;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 public class TagManager {
@@ -99,14 +97,16 @@ public class TagManager {
 
         if (extra_info.getClass() == Poi.class) {
             Poi poi = poiManager.SavePoi((Poi) extra_info);
-            if (poi != null)
+            if (poi != null) {
                 tagExtraInfo.add(poi);
-
+                SaveTag(tag);
+            }
         } else if (extra_info.getClass() == Tag.class) {
             Tag tagExtra = SaveTag((Tag) extra_info);
-            if (tagExtra != null)
+            if (tagExtra != null) {
                 tagExtraInfo.add(tagExtra);
-
+                SaveTag(tag);
+            }
         } else {
             throw new Exception("Tipo de informação extra invalida");
         }
@@ -209,6 +209,9 @@ public class TagManager {
                 throw new Exception("Tag nao apagada");
         }
 
+        listById.delete(tag_id);
+        listByDescricao.delete(tag.Description);
+
         //apagar todos os objectos contidos neste
         ArrayList<Entity> tagExtraInfo = tag.get_extra_info();
         for (Entity extraInfo : tagExtraInfo) {
@@ -243,6 +246,7 @@ public class TagManager {
                     listById.put(newTag.getId(), newTag);
                     listByDescricao.delete(oldTagDescription);
                     listByDescricao.put(newTag.Description, newTag);
+                    return newTag;
                 }
             }
         }
@@ -283,6 +287,44 @@ public class TagManager {
      */
     public void snapShot() throws IOException {
         database.SaveToFile();
+    }
+
+    public void binSnapShot() throws IOException {
+        database.SaveToBinFile();
+    }
+
+    public void loadTextFile(String path) throws IOException, ParseException {
+
+        database.ReadFromFile(path);
+
+        for(int tagId : listById.keys()){
+            listById.delete(tagId);
+        }
+        for(String descricao : listByDescricao.keys()){
+            listByDescricao.delete(descricao);
+        }
+
+        for(Tag tag : database.GetTable()) {
+            listById.put(tag.getId(), tag);
+            listByDescricao.put(tag.Description, tag);
+        }
+    }
+
+    public void loadBinFile(String path) throws IOException {
+
+        database.ReadFromBinFile(path);
+
+        for(int tagId : listById.keys()){
+            listById.delete(tagId);
+        }
+        for(String descricao : listByDescricao.keys()){
+            listByDescricao.delete(descricao);
+        }
+
+        for(Tag tag : database.GetTable()) {
+            listById.put(tag.getId(), tag);
+            listByDescricao.put(tag.Description, tag);
+        }
     }
 }
 

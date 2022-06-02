@@ -1,0 +1,5 @@
+1,poiNome1,descricao1,41.334457,-8.623519
+2,poiNome2,descricao2,41.23446,-8.632352
+3,poiNome3,descricao3,41.134457,-8.123519
+4,poiNome4,descricao4,41.634457,-8.223519
+5,poiNome5,descricao5,41.834457,-8.323519

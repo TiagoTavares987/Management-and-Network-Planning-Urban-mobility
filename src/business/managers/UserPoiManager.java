@@ -43,12 +43,11 @@ public class UserPoiManager {
         if (user != null) {
             ST<Integer, UserPoi> userPois = user.getPois();
             for (Integer poiId : userPois.keys()) {
-                UserPoi userPoi = userPois.get(poiId);
+                UserPoi userPoi = userPois.get(poiId); // buscar o objeto ao dicionario com o respetiva chave
                 if (userPoi.date.after(ini) && userPoi.date.before(fim))
                     list.add(poiManager.GetPoi(userPoi.poi));
             }
         }
-
         return list;
     }
 
@@ -67,14 +66,14 @@ public class UserPoiManager {
             ST<Integer, UserPoi> userPoisMatch = user.getPois();
             ST<Integer, UserPoi> userPois = new ST<>();
             for (Integer userPoi : userPoisMatch.keys()){
-                UserPoi poi = userPoisMatch.get(userPoi);
-                if(userPois.contains(poi.poi))
+                UserPoi poi = userPoisMatch.get(userPoi); // buscar o objeto ao dicionario com o respetiva chave
+                if(!userPois.contains(poi.poi))
                     userPois.put(poi.poi, poi);
             }
 
             ArrayList<Poi> allPois = poiManager.GetAll();
             for (Poi poi : allPois) {
-                if (!userPois.contains(poi.getId()) && userPois.get(poi.getId()).date.after(ini) && userPois.get(poi.getId()).date.before(fim))
+                if (!userPois.contains(poi.getId()) || userPois.get(poi.getId()).date.before(ini) || userPois.get(poi.getId()).date.after(fim))
                     list.add(poi);
             }
         }
@@ -94,9 +93,9 @@ public class UserPoiManager {
         ArrayList<User> users = userManager.GetAll();
         for (User user : users) {
             ST<Integer, UserPoi> userPois = user.getPois();
-            if (userPois.contains(poiId)) {
-                UserPoi userPoi = userPois.get(poiId);
-                if (userPoi.date.after(ini) && userPoi.date.before(fim))
+            for(Integer userPoiId : userPois.keys()) {
+                UserPoi userPoi = userPois.get(userPoiId);
+                if (userPoi.poi == poiId && userPoi.date.after(ini) && userPoi.date.before(fim))
                     list.add(user);
             }
         }
@@ -118,7 +117,7 @@ public class UserPoiManager {
 
             ST<Integer, UserPoi> userPois = user.getPois();
             for (Integer poiId : userPois.keys()) {
-                UserPoi userPoi = userPois.get(poiId);
+                UserPoi userPoi = userPois.get(poiId); // buscar o userpoi com aquele id de poi
                 if (userPoi.date.after(ini) && userPoi.date.before(fim))
                     poisVisitados.put(userPoi.poi, 0);
             }
@@ -195,18 +194,20 @@ public class UserPoiManager {
         return list;
     }
     private int[] top5 (ST<Integer, Integer> list) {
-        int[] top5id = new int[] {0, 0, 0, 0, 0};
-        int[] top5list = new int[] {0, 0, 0, 0, 0};
+        int[] top5id = new int[] {0, 0, 0, 0, 0}; // userID
+        int[] top5list = new int[] {0, 0, 0, 0, 0}; // contagem dos pois
         for (Integer userId : list.keys()) {
             Integer value = list.get(userId);
             for(int i = 0; i < 5; i++){
                 if(value > top5list[i]) {
+                    //shitf e organizar pelo maior
                     for(int j = 4; j > i; j--){
                         top5list[j] = top5list[j-1];
                         top5id[j] = top5id[j-1];
                     }
                     top5list[i] = value;
                     top5id[i] = userId;
+                    break;
                 }
             }
         }
@@ -220,21 +221,25 @@ public class UserPoiManager {
     public ArrayList<Entity> linhasVerticesArestas(Integer tagId) {
         ArrayList<Entity> list = new ArrayList<>();
 
-        ArrayList<core.entities.Node> nodes = nodeManager.GetAll();
-        for (core.entities.Node node : nodes) {
-            ST<Integer, core.entities.Tag> tags = node.getTags();
-            if (tags.contains(tagId)) {
-                list.add(node);
-                break;
+        ArrayList<Node> nodes = nodeManager.GetAll();
+        for (Node node : nodes) {
+            ST<Integer, Tag> tags = node.getTags();
+            for(Integer tag_Id : tags.keys()){
+                if(tags.get(tag_Id).getId() == tagId){
+                    list.add(node);
+                    break;
+                }
             }
         }
 
         ArrayList<Way> ways = wayManager.GetAll();
         for (Way way : ways) {
             ST<Integer, Tag> tags = way.getTags();
-            if (tags.contains(tagId)) {
-                list.add(way);
-                break;
+            for(Integer tag_Id : tags.keys()){
+                if(tags.get(tag_Id).getId() == tagId){
+                    list.add(way);
+                    break;
+                }
             }
         }
 
@@ -248,16 +253,17 @@ public class UserPoiManager {
      * @param user_id
      * @param Name
      * @param descricao
-     * @param localization
+     * @param longitude
+     * @param latitude
      * @return
      */
-    public int newPoi(Integer user_id, String Name, String descricao, Localization localization) throws Exception {
+    public int newPoi(Integer user_id, String Name, String descricao, float longitude, float latitude) throws Exception {
 
         User user = userManager.GetUser(user_id);
         if (user == null)
             throw new Exception("Utilizador invalido");
 
-        int poi = poiManager.newPoi(Name, descricao, localization);
+        int poi = poiManager.newPoi(Name, descricao, longitude, latitude);
 
         if (!userManager.addPoi(user_id, poi))
             throw new Exception("Poi nao associado ao utilizador");

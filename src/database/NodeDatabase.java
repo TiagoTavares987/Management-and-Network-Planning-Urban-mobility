@@ -4,14 +4,17 @@ import core.baseEntities.Const;
 import core.entities.Node;
 import core.entities.Poi;
 import core.entities.Tag;
+import core.entities.Way;
 import core.interfaces.DatabaseI;
+import core.utils.Test;
 import edu.princeton.cs.algs4.ST;
 
 import java.io.*;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-public class NodeDatabase implements DatabaseI<Node> {
+public class NodeDatabase extends Database implements DatabaseI<Node> {
 
     private static final ST<Integer, Node> nodeDatabaseST = new ST<>();
     private final TagDatabase tagDatabase = new TagDatabase();
@@ -99,13 +102,20 @@ public class NodeDatabase implements DatabaseI<Node> {
             FileWriter tfw = new FileWriter(new File(Const.outputPath, Const.nodesTagsFile)); // wrapp do file
             PrintWriter tpw = new PrintWriter(tfw);
             FileWriter pfw = new FileWriter(new File(Const.outputPath, Const.nodesPoisFile)); // wrapp do file
-            PrintWriter ppw = new PrintWriter(tfw);
+            PrintWriter ppw = new PrintWriter(pfw);
 
+            String line;
             for(Integer nodeId : nodeDatabaseST.keys()){
                 Node node = nodeDatabaseST.get(nodeId);
-                npw.println(node.toString());
-                tpw.println(node.tagsToString());
-                ppw.println(node.poisToString());
+                line = node.toString();
+                if (!Test.isNullOrEmpty(line))
+                    npw.println(line);
+                line = node.tagsToString();
+                if (!Test.isNullOrEmpty(line))
+                    tpw.println(line);
+                line = node.poisToString();
+                if (!Test.isNullOrEmpty(line))
+                    ppw.println(line);
             }
 
             npw.flush();
@@ -125,9 +135,13 @@ public class NodeDatabase implements DatabaseI<Node> {
         }
     }
 
-    public void ReadFromFile() throws IOException {
+    @Override
+    public void ReadFromFile(String path) throws IOException, ParseException {
 
-        FileReader fr = new FileReader(new File(Const.inputPath, Const.nodesFile));
+        if(Test.isNullOrEmpty(path))
+            path = Const.inputPath;
+
+        FileReader fr = new FileReader(new File(path, Const.nodesFile));
         BufferedReader br = new BufferedReader(fr);
 
         String line;
@@ -270,9 +284,12 @@ public class NodeDatabase implements DatabaseI<Node> {
     }
 
     @Override
-    public void ReadFromBinFile() throws IOException {
+    public void ReadFromBinFile(String path) throws IOException {
 
-        FileInputStream file = new FileInputStream(Const.nodesBinInputFile);
+        if(Test.isNullOrEmpty(path))
+            path = Const.nodesBinInputFile;
+
+        FileInputStream file = new FileInputStream(path);
         DataInputStream dos = new DataInputStream(new BufferedInputStream(file));
 
         Node node = new Node();

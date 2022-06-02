@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<VBox alignment="CENTER" spacing="20.0"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="Fx.lists.UsersController">
+    <TableView fx:id="usersTable">
+        <columns>
+            <TableColumn fx:id="userIdCol" prefWidth="75.0" text="Id" />
+            <TableColumn fx:id="userNameCol" prefWidth="75.0" text="Username"/>
+            <TableColumn fx:id="userTypeCol" prefWidth="75.0" text="Type"/>
+        </columns>
+    </TableView>
+    <HBox prefHeight="0.0" spacing="8.0">
+        <TextField fx:id="userNameField" promptText="Nome"/>
+        <ComboBox fx:id="userTypeCombo" prefWidth="150.0" promptText="Type">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:id="basic" fx:value="basic"/>
+                    <String fx:id="admin" fx:value="admin"/>
+                </FXCollections>
+            </items>
+        </ComboBox>
+        <Button mnemonicParsing="false" onAction="#onUserAdd" text="Add"/>
+        <Button mnemonicParsing="false" onAction="#onUserRemove" text="Remove"/>
+        <Button mnemonicParsing="false" onAction="#onUserEdit" text="Edit"/>
+    </HBox>
+</VBox>

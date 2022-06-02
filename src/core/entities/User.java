@@ -42,13 +42,15 @@ public class User extends Entity implements CloneI<User> {
   }
 
   public String poisToString() {
+
+    if (pois.size() == 0)
+      return "";
+
     String result = getId().toString();
     for (Integer poiId : pois.keys()) {
-      result += "," + pois.get(poiId).user_id;
       result += "," + pois.get(poiId).poi;
       result += "," + pois.get(poiId).date;
     }
-    result += "\n";
     return result;
   }
 }

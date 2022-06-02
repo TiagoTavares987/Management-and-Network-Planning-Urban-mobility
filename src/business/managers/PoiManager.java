@@ -9,6 +9,7 @@ import edu.princeton.cs.algs4.BST;
 import edu.princeton.cs.algs4.ST;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 public class PoiManager {
@@ -71,17 +72,18 @@ public class PoiManager {
      *
      * @param Name String recebe o nome do poi
      * @param descricao String recebe a descricao do poi
-     * @param localization Localizacao que recebe a latitude e longitude do poi
+     * @param longitude  longitude do poi
+     * @param latitude  latitude do poi
      * @return Returna o poi com o respetivo id
      * @throws Exception
      */
-    public int newPoi(String Name, String descricao, Localization localization) throws Exception {
+    public int newPoi(String Name, String descricao, float longitude, float latitude) throws Exception {
 
         Poi poi = new Poi();
         poi.Name = Name;
         poi.Description = descricao;
-        poi.getLocalization().Longitude = localization.Longitude;
-        poi.getLocalization().Latitude = localization.Latitude;
+        poi.getLocalization().Longitude = longitude;
+        poi.getLocalization().Latitude = latitude;
 
         Poi newPoi = SavePoi(poi);
 
@@ -132,12 +134,16 @@ public class PoiManager {
             }
         }
 
+        Poi poi = database.GetEntity(poi_id);
         if (!database.Delete(poi_id)){
             if(silent)
                 return;
             else
                 throw new Exception("Poi nao apagado");
         }
+
+        listById.delete(poi_id);
+        listByName.delete(poi.Name);
     }
 
     /**
@@ -164,6 +170,7 @@ public class PoiManager {
                     listById.put(newPoi.getId(), newPoi);
                     listByName.delete(oldPoiname);
                     listByName.put(newPoi.Name, newPoi);
+                    return newPoi;
                 }
             }
         }
@@ -217,5 +224,43 @@ public class PoiManager {
      */
     public void snapShot() throws IOException {
         database.SaveToFile();
+    }
+
+    public void binSnapShot() throws IOException {
+        database.SaveToBinFile();
+    }
+
+    public void loadTextFile(String path) throws IOException, ParseException {
+
+        database.ReadFromFile(path);
+
+        for(int poiId : listById.keys()){
+            listById.delete(poiId);
+        }
+        for(String poiName : listByName.keys()){
+            listByName.delete(poiName);
+        }
+
+        for(Poi poi : database.GetTable()) {
+            listById.put(poi.getId(), poi);
+            listByName.put(poi.Name, poi);
+        }
+    }
+
+    public void loadBinFile(String path) throws IOException {
+
+        database.ReadFromBinFile(path);
+
+        for(int poiId : listById.keys()){
+            listById.delete(poiId);
+        }
+        for(String poiName : listByName.keys()){
+            listByName.delete(poiName);
+        }
+
+        for(Poi poi : database.GetTable()) {
+            listById.put(poi.getId(), poi);
+            listByName.put(poi.Name, poi);
+        }
     }
 }

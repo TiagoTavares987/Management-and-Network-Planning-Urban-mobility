@@ -1,0 +1,4 @@
+1,wayNome1,1,3
+2,wayNome2,1,3
+3,wayNome3,3,4
+4,wayNome4,4,3

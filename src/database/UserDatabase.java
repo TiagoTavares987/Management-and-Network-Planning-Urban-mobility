@@ -7,14 +7,18 @@ import core.entities.User;
 import core.entities.UserPoi;
 import core.enums.UserType;
 import core.interfaces.DatabaseI;
+import core.utils.Test;
 import edu.princeton.cs.algs4.ST;
 
 import java.io.*;
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 
-public class UserDatabase implements DatabaseI<User> {
+public class UserDatabase extends Database implements DatabaseI<User> {
 
     private final ST<Integer, User> userDatabaseST = new ST<>();
     private final PoiDatabase poiDatabase = new PoiDatabase();
@@ -132,7 +136,7 @@ public class UserDatabase implements DatabaseI<User> {
 
         ST<Integer, UserPoi> pois = entity.getPois();
         if(pois.contains(poi_id)){
-            pois.remove(1);
+            pois.remove(poi_id);
             return Update(entity) != null;
         }
 
@@ -146,10 +150,16 @@ public class UserDatabase implements DatabaseI<User> {
             FileWriter tfw = new FileWriter(new File(Const.outputPath, Const.usersPoiFile)); // wrapp do file
             PrintWriter tpw = new PrintWriter(tfw);
 
+
+            String line;
             for(Integer userId : userDatabaseST.keys()){
                 User user = userDatabaseST.get(userId);
-                npw.println(user.toString());
-                tpw.println(user.poisToString());
+                line = user.toString();
+                if (!Test.isNullOrEmpty(line))
+                    npw.println(line);
+                line = user.poisToString();
+                if (!Test.isNullOrEmpty(line))
+                    tpw.println(line);
             }
 
             npw.flush();
@@ -166,9 +176,12 @@ public class UserDatabase implements DatabaseI<User> {
     }
 
     @Override
-    public void ReadFromFile() throws IOException {
+    public void ReadFromFile(String path) throws IOException, ParseException {
 
-        FileReader fr = new FileReader(new File(Const.inputPath, Const.usersFile));
+        if(Test.isNullOrEmpty(path))
+            path = Const.inputPath;
+
+        FileReader fr = new FileReader(new File(path, Const.usersFile));
         BufferedReader br = new BufferedReader(fr);
 
         String line;
@@ -204,6 +217,7 @@ public class UserDatabase implements DatabaseI<User> {
 
         while ((line=br.readLine()) != null) {
             User user = null;
+            int poiId = 0;
 
             int propCount = 0;
             StringTokenizer st=new StringTokenizer(line, ",");
@@ -218,20 +232,23 @@ public class UserDatabase implements DatabaseI<User> {
                         user = null;
                 }
                 else if(user != null) {
-                    UserPoi userPoi = new UserPoi();
-                    userPoi.poi = Integer.parseInt(token);
-                    Poi poi = poiDatabase.GetEntity(userPoi.poi);
-                    if(poi != null){
+                    if(propCount == 1){
+                        poiId = Integer.parseInt(token);
+                    } else if(propCount == 2 && poiId != 0 && poiDatabase.GetEntity(poiId) != null){
+                        UserPoi userPoi = new UserPoi();
+                        userPoi.user_id = user.getId();
+                        userPoi.poi = poiId;
+                        userPoi.date = new SimpleDateFormat().parse(token);
                         ST<Integer, UserPoi> userPois = user.getPois();
-                        if(!userPois.contains(userPoi.poi))
+                        if(!userPois.contains(userPoi.poi)) {
                             userPois.put(userPoi.poi, userPoi);
+                            Update(user);
+                        }
                     }
                 }
 
                 propCount++;
             }
-
-            Update(user);
         }
 
         br.close();
@@ -267,19 +284,32 @@ public class UserDatabase implements DatabaseI<User> {
     }
 
     @Override
-    public void ReadFromBinFile() throws IOException {
+    public void ReadFromBinFile(String path) throws IOException {
 
-        FileInputStream file = new FileInputStream(Const.usersBinInputFile);
+        if(Test.isNullOrEmpty(path))
+            path = Const.usersBinInputFile;
+
+        FileInputStream file = new FileInputStream(path);
         DataInputStream dos = new DataInputStream(new BufferedInputStream(file));
 
+        String str = dos.readUTF();
         User user = new User();
-        int n = dos.readInt();
-        for (int i = 0; i < n; i++) {
-            user.setId(i);
-            user.UserType = UserType.valueOf(dos.readUTF());
-            user.Username = dos.readUTF();
-            user.Password = dos.readUTF();
+
+        while (str != null){
+            String[] token = str.split(",");
+            for (int i = 0; i < token.length; i++) {
+                if (i == 0)
+                    user.setId(Integer.parseInt(token[i]));
+                else if(i == 1)
+                    user.UserType = UserType.valueOf(token[i]);
+                else if(i == 2)
+                    user.Username = token[i];
+                else if(i == 3)
+                    user.Password = token[i];
+            }
             userDatabaseST.put(user.getId(), user);
+
+            str = dos.readUTF();
         }
 
         Update(user);
@@ -291,23 +321,27 @@ public class UserDatabase implements DatabaseI<User> {
         dos = new DataInputStream(new BufferedInputStream(file));
 
         user = null;
-        n = dos.readInt();
-        for (int i = 0; i < n; i++) {
-            int userId = i;
-            if (userDatabaseST.contains(userId))
-                user = GetEntity(userId);
-            else
-                user = null;
-            if (user != null) {
+        str = dos.readUTF();
+        String[] token = str.split(",");
+
+        for (int i = 0; i < token.length; i++) {
+            if(i == 0){
+                int userId = Integer.parseInt(token[i]);
+                if(userDatabaseST.contains(userId))
+                    user = GetEntity(userId);
+                else
+                    user = null;
+            } else if (user != null) {
                 UserPoi userPoi = new UserPoi();
-                userPoi.poi = i;
+                userPoi.poi = Integer.parseInt(token[i]);
                 Poi poi = poiDatabase.GetEntity(userPoi.poi);
-                if(poi != null) {
+                if(poi != null){
                     ST<Integer, UserPoi> userPois = user.getPois();
                     if(!userPois.contains(userPoi.poi))
                         userPois.put(userPoi.poi, userPoi);
                 }
             }
+
         }
         Update(user);
 

@@ -36,9 +36,8 @@ public class Tag extends Entity implements CloneI<Tag> {
   public String extra_info_ToString() {
     String result = getId().toString();
     for (Entity extraInfo : extra_info) {
-      result += "," + extra_info.get(extraInfo.getId());
+      result += "," + extraInfo.getClass().getSimpleName() + "," + extraInfo.getId();
     }
-    result += "\n";
     return result;
   }
 }

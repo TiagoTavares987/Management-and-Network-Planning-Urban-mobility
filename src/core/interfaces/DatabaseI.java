@@ -1,6 +1,7 @@
 package core.interfaces;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 /**
@@ -21,10 +22,12 @@ public interface DatabaseI<T> {
 
   void SaveToFile() throws IOException;
 
-  void ReadFromFile() throws IOException;
+  void ReadFromFile() throws IOException, ParseException;
+
+  void ReadFromFile(String path) throws IOException, ParseException;
 
   void SaveToBinFile() throws IOException;
 
-  void ReadFromBinFile() throws IOException;
+  void ReadFromBinFile(String path) throws IOException;
 
 }

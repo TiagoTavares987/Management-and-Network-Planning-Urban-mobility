@@ -48,20 +48,26 @@ public class Node extends Entity implements CloneI<Node> {
   }
 
   public String tagsToString() {
+
+    if (tags.size() == 0)
+      return "";
+
     String result = getId().toString();
     for(Integer tagId : tags.keys()){
       result += "," + tags.get(tagId).getId();
     }
-    result += "\n";
     return result;
   }
 
   public String poisToString() {
+
+    if (pois.size() == 0)
+      return "";
+
     String result = getId().toString();
     for(Integer poiId : pois.keys()){
       result += "," + pois.get(poiId).getId();
     }
-    result += "\n";
     return result;
   }
 }

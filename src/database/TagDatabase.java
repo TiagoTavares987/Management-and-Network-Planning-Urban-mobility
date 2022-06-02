@@ -6,16 +6,20 @@ import core.entities.Node;
 import core.entities.Poi;
 import core.entities.Tag;
 import core.interfaces.DatabaseI;
+import core.utils.Test;
 import edu.princeton.cs.algs4.ST;
 
 import java.io.*;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 
-public class TagDatabase implements DatabaseI<Tag> {
+public class TagDatabase extends Database implements DatabaseI<Tag> {
 
     private final ST<Integer, Tag> tagDatabaseST = new ST<>();
+
+    private final PoiDatabase poiDatabase = new PoiDatabase();
 
     /**
      * @param id
@@ -118,9 +122,12 @@ public class TagDatabase implements DatabaseI<Tag> {
     }
 
     @Override
-    public void ReadFromFile() throws IOException {
+    public void ReadFromFile(String path) throws IOException, ParseException {
 
-        FileReader fr = new FileReader(new File(Const.inputPath, Const.tagsFile));
+        if(Test.isNullOrEmpty(path))
+            path = Const.inputPath;
+
+        FileReader fr = new FileReader(new File(path, Const.tagsFile));
         BufferedReader br = new BufferedReader(fr);
 
         String line;
@@ -152,12 +159,14 @@ public class TagDatabase implements DatabaseI<Tag> {
 
         while ((line=br.readLine()) != null) {
             Tag tag = null;
+            ArrayList<Entity> infoTags = null;
 
             int propCount = 0;
             StringTokenizer st=new StringTokenizer(line, ",");
 
             while (st.hasMoreTokens()) {
                 String token = st.nextToken();
+
                 if(propCount == 0){
                     int tagId = Integer.parseInt(token);
                     if(tagDatabaseST.contains(tagId))
@@ -165,12 +174,27 @@ public class TagDatabase implements DatabaseI<Tag> {
                     else
                         tag = null;
                 } else if (tag != null) {
-                    ArrayList<Entity> infoTags = tag.get_extra_info();
-                    if(!infoTags.contains(tag))
-                        infoTags.add(tag);
 
+                    String type = null;
+                    if (infoTags == null)
+                        infoTags = tag.get_extra_info();
+
+                    if (propCount % 2 == 1) {
+                        type = token;
+                    } else if (propCount % 2 == 0){
+
+                        Entity entity = null;
+                        int id = Integer.parseInt(token);
+                        switch (type) {
+                            case "Poi" :
+                                entity = poiDatabase.GetEntity(id);
+                            case "Tag" :
+                                entity = GetEntity(id);
+                        }
+                        if(entity != null && !infoTags.contains(entity))
+                            infoTags.add(entity);
+                    }
                 }
-
                 propCount++;
             }
 
@@ -210,9 +234,12 @@ public class TagDatabase implements DatabaseI<Tag> {
     }
 
     @Override
-    public void ReadFromBinFile() throws IOException {
+    public void ReadFromBinFile(String path) throws IOException {
 
-        FileInputStream file = new FileInputStream(Const.tagsBinInputFile);
+        if(Test.isNullOrEmpty(path))
+            path = Const.tagsBinInputFile;
+
+        FileInputStream file = new FileInputStream(path);
         DataInputStream dos = new DataInputStream(new BufferedInputStream(file));
 
         Tag tag = new Tag();

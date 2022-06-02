@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" spacing="20.0"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="Fx.lists.PoisController">
+    <TableView fx:id="poisTable">
+        <columns>
+            <TableColumn fx:id="poiIdCol" prefWidth="75.0" text="Id"/>
+            <TableColumn fx:id="poiNameCol" prefWidth="75.0" text="Name"/>
+            <TableColumn fx:id="poiDescriptionCol" prefWidth="75.0" text="Start"/>
+            <TableColumn fx:id="poiLatCol" prefWidth="75.0" text="Lat" />
+            <TableColumn fx:id="poiLonCol" prefWidth="75.0" text="Lon" />
+        </columns>
+    </TableView>
+    <HBox prefHeight="0.0" spacing="8.0">
+        <TextField fx:id="poiNameField" promptText="Extra Info"/>
+        <TextField fx:id="poiDescriptionField" promptText="Description"/>
+        <Spinner fx:id="poiLatField" amountToStepBy="0.1" editable="true" initialValue="37.0" max="45.0" min="35.0" prefWidth="80.0" />
+        <Spinner fx:id="poiLonField" amountToStepBy="0.1" editable="true" initialValue="-7.0" max="-5.0" min="-10.0" prefWidth="80.0" />
+        <Button mnemonicParsing="false" onAction="#onPoiAdd" text="Add"/>
+        <Button mnemonicParsing="false" onAction="#onPoiRemove" text="Remove"/>
+        <Button mnemonicParsing="false" onAction="#onPoiEdit" text="Edit"/>
+    </HBox>
+</VBox>
